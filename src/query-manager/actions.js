@@ -66,4 +66,6 @@ export default {
   query,
   queryResultsAdd,
   queryResultsReset,
+  queryResultsError,
+  queryResultsFetching,
 }

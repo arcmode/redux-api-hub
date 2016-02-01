@@ -5266,7 +5266,9 @@ module.exports =
 	exports.default = {
 	  query: query,
 	  queryResultsAdd: queryResultsAdd,
-	  queryResultsReset: queryResultsReset
+	  queryResultsReset: queryResultsReset,
+	  queryResultsError: queryResultsError,
+	  queryResultsFetching: queryResultsFetching
 	};
 
 /***/ },
