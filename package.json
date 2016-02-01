@@ -1,0 +1,26 @@
+{
+  "name": "redux-api-hub",
+  "version": "0.0.1",
+  "description": "Reactjs HOCs for api integration of Redux apps. Partially inspired by Relay but declaring queries via plain objects and functions instead of GraphQL. Works on React and React Native",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drojas/redux-api-hub.git"
+  },
+  "keywords": [
+    "react",
+    "flux",
+    "redux",
+    "api",
+    "fetch"
+  ],
+  "author": "David Rojas <drojascamaggi@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/drojas/redux-api-hub/issues"
+  },
+  "homepage": "https://github.com/drojas/redux-api-hub#readme"
+}
