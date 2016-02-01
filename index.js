@@ -51,19 +51,27 @@ module.exports =
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.connectContainer = exports.connectComponent = exports.QueryManager = undefined;
+	exports.combineQueries = exports.connectContainer = exports.connectComponent = exports.RequestError = exports.QueryManager = undefined;
 
 	var _index = __webpack_require__(1);
 
 	var _index2 = _interopRequireDefault(_index);
 
-	var _connector = __webpack_require__(4);
+	var _requestError = __webpack_require__(4);
+
+	var _requestError2 = _interopRequireDefault(_requestError);
+
+	var _combinator = __webpack_require__(6);
+
+	var _connector = __webpack_require__(7);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.QueryManager = _index2.default;
+	exports.RequestError = _requestError2.default;
 	exports.connectComponent = _connector.connectComponent;
 	exports.connectContainer = _connector.connectContainer;
+	exports.combineQueries = _combinator.combineQueries;
 
 /***/ },
 /* 1 */
@@ -5263,6 +5271,147 @@ module.exports =
 
 /***/ },
 /* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	*
+	* RequestError
+	*
+	*/
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var ExtendableError = __webpack_require__(5);
+
+	var RequestError = function (_ExtendableError) {
+	  _inherits(RequestError, _ExtendableError);
+
+	  function RequestError(_ref) {
+	    var query = _ref.query;
+	    var request = _ref.request;
+	    var response = _ref.response;
+	    var error = _ref.error;
+
+	    _classCallCheck(this, RequestError);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(RequestError).call(this, error.message));
+
+	    _this.status = error.status;
+	    _this.request = request;
+	    _this.response = response;
+	    _this.query = query;
+
+	    _this.ACCESS_TOKEN_EXPIRED = _this.status === 401 && _this.message === 'The access token expired';
+
+	    _this.INSUFFICIENT_CLIENT_SCOPE = _this.status === 403 && _this.message === 'Insufficient client scope';
+	    return _this;
+	  }
+
+	  return RequestError;
+	}(ExtendableError);
+
+	exports.default = RequestError;
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+
+	var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var ExtendableError = (function (_Error) {
+	  _inherits(ExtendableError, _Error);
+
+	  function ExtendableError() {
+	    var message = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+
+	    _classCallCheck(this, ExtendableError);
+
+	    _get(Object.getPrototypeOf(ExtendableError.prototype), 'constructor', this).call(this, message);
+
+	    // extending Error is weird and does not propagate `message`
+	    Object.defineProperty(this, 'message', {
+	      enumerable: false,
+	      value: message
+	    });
+
+	    Object.defineProperty(this, 'name', {
+	      enumerable: false,
+	      value: this.constructor.name
+	    });
+
+	    if (Error.hasOwnProperty('captureStackTrace')) {
+	      Error.captureStackTrace(this, this.constructor);
+	      return;
+	    }
+
+	    Object.defineProperty(this, 'stack', {
+	      enumerable: false,
+	      value: new Error(message).stack
+	    });
+	  }
+
+	  return ExtendableError;
+	})(Error);
+
+	exports['default'] = ExtendableError;
+	module.exports = exports['default'];
+
+/***/ },
+/* 6 */
+/***/ function(module, exports) {
+
+	/**
+	*
+	* Combinator
+	*
+	*/
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	function combineQueries(listOfQueries) {
+	  return listOfQueries.reduce(queryCombinatorReducer, {});
+	}
+
+	function queryCombinatorReducer(combinedQuery, query, idx, allClasses) {
+	  var classQueries = Object.keys(query);
+	  return classQueries.reduce(genQueryReducer(query), combinedQuery);
+	}
+
+	function genQueryReducer(query) {
+	  return function (combinedQuery, queryName, idx, allQueries) {
+	    var queryCandidate = query[queryName];
+	    combinedQuery[queryName] = typeof queryCandidate === 'function' ? queryCandidate(combinedQuery[queryName]) : queryCandidate;
+	    return combinedQuery;
+	  };
+	}
+
+	exports.combineQueries = combineQueries;
+
+/***/ },
+/* 7 */
 /***/ function(module, exports) {
 
 	/**
