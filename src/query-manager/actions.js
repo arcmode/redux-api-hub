@@ -53,7 +53,7 @@ export function query(options) {
       })
       .done(results => {
         results
-          .map(queryResults => queryResults.get('error'))
+          .map(queryResults => queryResults && queryResults.get('error', null) || null)
           .filter(e => !!e).valueSeq()
           .forEach(e => {
             dispatch(queryResultsError(e));

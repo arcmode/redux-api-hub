@@ -5253,7 +5253,7 @@ module.exports =
 	      throw error;
 	    }).done(function (results) {
 	      results.map(function (queryResults) {
-	        return queryResults.get('error');
+	        return queryResults && queryResults.get('error', null) || null;
 	      }).filter(function (e) {
 	        return !!e;
 	      }).valueSeq().forEach(function (e) {
