@@ -9,6 +9,7 @@ module.exports = {
     library: true,
     libraryTarget: 'commonjs2'
   },
+  devtool: 'eval-source-map',
   module: {
     loaders: [
       {

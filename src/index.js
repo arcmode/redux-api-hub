@@ -4,6 +4,7 @@
 import QueryManager from './query-manager/index';
 import RequestError from './query-manager/request-error';
 import { combineQueries } from './query-manager/combinator';
+import { performRootQuery } from './query-manager/api-adapter';
 import {
   connectContainer,
   connectComponent
@@ -15,4 +16,5 @@ export {
   connectComponent,
   connectContainer,
   combineQueries,
+  performRootQuery,
 }

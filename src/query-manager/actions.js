@@ -47,13 +47,15 @@ export function query(options) {
         dispatch(queryResultsAdd(results));
         return results;
       })
-      .catch(error => {
-        //console.log('ERROR', error, (error instanceof Error));
-        throw error;
-      })
+      // .catch(error => {
+      //   console.log('ERROR', error);
+      //   return {error}
+      // })
       .done(results => {
+        // is this really a desired behaviour?
+        debugger
         results
-          .map(queryResults => queryResults && queryResults.get('error', null) || null)
+          .map(queryResults => queryResults && queryResults.get('error') || null)
           .filter(e => !!e).valueSeq()
           .forEach(e => {
             dispatch(queryResultsError(e));
@@ -68,4 +70,4 @@ export default {
   queryResultsReset,
   queryResultsError,
   queryResultsFetching,
-}
+};
