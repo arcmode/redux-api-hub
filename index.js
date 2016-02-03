@@ -5270,7 +5270,6 @@ module.exports =
 	    // })
 	    .done(function (results) {
 	      // is this really a desired behaviour?
-	      debugger;
 	      results.map(function (queryResults) {
 	        return queryResults && queryResults.get('error') || null;
 	      }).filter(function (e) {

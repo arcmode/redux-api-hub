@@ -53,7 +53,6 @@ export function query(options) {
       // })
       .done(results => {
         // is this really a desired behaviour?
-        debugger
         results
           .map(queryResults => queryResults && queryResults.get('error') || null)
           .filter(e => !!e).valueSeq()
