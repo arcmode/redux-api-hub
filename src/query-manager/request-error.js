@@ -9,12 +9,13 @@
 var ExtendableError = require('es6-error');
 
 export default class RequestError extends ExtendableError {
-  constructor({query, request, response, error}) {
+  constructor({query, request, response, error, body}) {
     super(error.message);
-    this.name = 'RequestError';
+    // this.name = 'RequestError';
     this.status = error.status;
     this.request = request;
     this.response = response;
+    this.body = body;
     this.query = query;
 
     this.ACCESS_TOKEN_EXPIRED = (

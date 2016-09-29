@@ -28,8 +28,9 @@ class QueryManager {
   }
 
   containerWillMount(container) {
-    this.container = container;
     this.reset();
+    this.componentWillMount(container);
+    this.container = container;
   }
 
   componentWillMount(component) {
@@ -55,25 +56,89 @@ class QueryManager {
           return reduced.mergeWith(queryMerger, proped);
         }, Immutable.Map({})).toJS();
       this.componentsQueryIndex = Immutable.Map({});
-      component.props.dispatch(Actions.query({api, query: reducedQuery}));
+      (component.props.dispatch || component.props.store.dispatch)(
+        Actions.query({api, query: reducedQuery}));
     }
+
+  }
+
+  containerDidMount(container, query) {
+    this.componentDidMount(container, query);
   }
 }
 
 QueryManager.Actions = Actions;
-QueryManager.createReducer = function({namespace, initialState, handlers}) {
-  const {onAdd, onReset, onFetching, onError, onReplace} = handlers;
+QueryManager.createReducer = function({scope, initialState, handlers}) {
+  const {onAdd, onReset, onFetching, onError, onErrorClear, onReplace} = handlers;
   const format = {
-    [`${namespace}_ADD`]: (state, action) => onAdd(state, action.payload),
-    [`${namespace}_RESET`]: (state, action) => onReset(state, action.payload),
-    [`${namespace}_FETCHING`]: (state, action) => onFetching(state, action.payload),
-    [`${namespace}_ERROR`]: (state, action) => onError(state, action.payload),
-    [`${namespace}_REPLACE`]: (state, action) => onReplace(state, action.payload)
+    [`QUERY_RESULTS_ADD`]: (state, action) => {
+      let { payload } = action;
+      let results = payload.filter(keyIn.apply(null, scope));
+      return (results.size > 0) ?
+        onAdd(state, results)
+        : null;
+    },
+    [`QUERY_RESULTS_RESET`]: (state, action) => {
+      if (!Array.isArray(action.payload.scope)) {
+        throw new Error('invalid payload'); };
+      let intersection = intersect(scope, action.payload.scope);
+      return (intersection.length > 0) ?
+        onReset(
+          state, Object.assign(
+            {}, action, { payload: Object.assign(
+              {}, action.payload, { scope: intersection})}))
+      : null;
+    },
+    [`QUERY_RESULTS_FETCHING`]: (state, action) => {
+      if (!Array.isArray(action.payload)) { throw new Error('invalid payload'); };
+      let intersection = intersect(scope, action.payload);
+      return (intersection.length > 0) ?
+        onFetching(state, intersection)
+        : null;
+    },
+    [`QUERY_RESULTS_ERROR`]: (state, action) => {
+      return (scope.indexOf(action.payload.query) > -1) ?
+        onError(state, action)
+        : null;
+    },
+    [`QUERY_RESULTS_ERROR_CLEAR`]: (state, action) => {
+      if (!Array.isArray(action.payload.scope)) {
+        throw new Error('invalid payload'); };
+      let intersection = intersect(scope, action.payload.scope);
+      return (intersection.length > 0) ?
+        onErrorClear(
+          state, Object.assign(
+            {}, action, { payload: Object.assign(
+              {}, action.payload, { scope: intersection})}))
+        : null;
+    },
+    [`QUERY_RESULTS_REPLACE`]: (state, action) => {
+      return onReplace(state, action);
+    }
   };
+
   return (state = initialState, action) => {
     const handler = format[action.type];
-    return handler && handler(state, action) || state;
+    if (typeof handler === 'function') {
+      return handler(state, action) || state;
+    }
+
+    return state;
   };
 };
 
 module.exports = QueryManager;
+
+function intersect(a, b)
+{
+  return a.filter(function(n) {
+    return b.indexOf(n) != -1;
+  });
+}
+
+function keyIn(/*...keys*/) {
+  var keySet = Immutable.Set(arguments); 
+  return function (v, k) {
+    return keySet.has(k);
+  };
+}

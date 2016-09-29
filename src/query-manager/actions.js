@@ -15,18 +15,18 @@ export function queryResultsFetching(query) {
 }
 
 export const QUERY_RESULTS_ADD = 'QUERY_RESULTS_ADD';
-export function queryResultsAdd(results) {
+export function queryResultsAdd(payload) {
   return {
     type: QUERY_RESULTS_ADD,
-    payload: results
+    payload
   };
 }
 
 export const QUERY_RESULTS_RESET = 'QUERY_RESULTS_RESET';
-export function queryResultsReset(results) {
+export function queryResultsReset(payload) {
   return {
     type: QUERY_RESULTS_RESET,
-    payload: results
+    payload
   };
 }
 
@@ -39,27 +39,25 @@ export function queryResultsError(error) {
   };
 }
 
+export const QUERY_RESULTS_ERROR_CLEAR = 'QUERY_RESULTS_ERROR_CLEAR';
+export function queryResultsErrorClear(payload) {
+  return {
+    type: QUERY_RESULTS_ERROR_CLEAR,
+    payload,
+  };
+}
+
 export function query(options) {
-  return function(dispatch) {
-    const {api} = options;
-    return api.performRootQuery(options.query, dispatch)
-      .then(results => {
-        dispatch(queryResultsAdd(results));
-        return results;
-      })
-      // .catch(error => {
-      //   console.log('ERROR', error);
-      //   return {error}
-      // })
-      .done(results => {
-        // is this really a desired behaviour?
-        results
-          .map(queryResults => queryResults && queryResults.get('error') || null)
-          .filter(e => !!e).valueSeq()
-          .forEach(e => {
-            dispatch(queryResultsError(e));
-          });
-      });
+  return function(dispatch, getState) {
+    const { api } = options;
+    let promise = api.performRootQuery(options.query, dispatch)
+        .then(results => {
+          dispatch(queryResultsAdd(results));
+          return results;
+        });
+    return options.returnPromise ?
+      promise
+      : promise.done(options.callback || (() => void 0));
   };
 }
 
@@ -69,4 +67,5 @@ export default {
   queryResultsReset,
   queryResultsError,
   queryResultsFetching,
+  queryResultsErrorClear,
 };

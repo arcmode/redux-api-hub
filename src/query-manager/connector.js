@@ -21,7 +21,9 @@ export const connectComponent = React => query => component => {
     }
 
     render(){
-      return React.createElement(component, Object.assign({}, this.props));
+      return React.createElement(
+        component, Object.assign(
+          {}, this.props, { ref: 'wrappedInstance' }));
     }
   };
 
@@ -41,6 +43,10 @@ export const connectContainer = React => container => {
 
     componentWillMount() {
       this.props.queryAdapter.containerWillMount(this);
+    }
+
+    componentDidMount() {
+      this.props.queryAdapter.containerDidMount(this, this.props.query);
     }
 
     getChildContext() {
